@@ -2,6 +2,9 @@
 
 Implemented 
 
+- [x] QUIT
+- [x] PING
+- [x] COMMAND
 - [x] SET 
 - [x] GET
 - [x] DEL

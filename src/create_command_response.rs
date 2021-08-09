@@ -75,6 +75,37 @@ pub(crate) fn create_command_respons() -> String {
                 Value::String("@string".to_string()),
                 Value::String("@slow".to_string())
             ])
+        ]),
+        Value::Array(vec![
+            Value::String("ping".to_string()),
+            Value::Integer(-1),
+            Value::Array(vec![
+                Value::String("stale".to_string()),
+                Value::String("fast".to_string())
+            ]),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Array(vec![
+                Value::String("@fast".to_string()),
+                Value::String("@connection".to_string())
+            ])
+        ]),
+        Value::Array(vec![
+            Value::String("command".to_string()),
+            Value::Integer(-1),
+            Value::Array(vec![
+                Value::String("random".to_string()),
+                Value::String("loading".to_string()),
+                Value::String("stale".to_string())
+            ]),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Array(vec![
+                Value::String("@slow".to_string()),
+                Value::String("@connection".to_string())
+            ])
         ])
     ]);
 
