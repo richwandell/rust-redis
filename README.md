@@ -4,11 +4,12 @@ Implemented
 
 - [x] SET 
 - [x] GET
+- [x] DEL
+- [x] KEYS
 - [ ] MSET
 - [ ] MGET
 - [ ] GETDEL
 - [ ] GETSET
-- [ ] KEYS
 - [ ] LPUSH
 - [ ] LPOP
 - [ ] RPUSH

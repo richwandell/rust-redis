@@ -15,6 +15,13 @@ use std::str;
 pub(crate) fn thread_loop(mut stream: TcpStream, data_map_mutex: Arc<Mutex<HashMap<String, Storage>>>, _rx: Receiver<()>) {
     let mut message = "".to_string();
 
+    macro_rules! response {
+        ($value:expr) => {
+            let value = encode(&$value);
+            message = str::from_utf8(&value).unwrap().parse().unwrap();
+        }
+    }
+
     macro_rules! string_response {
             ($string:expr) => {
                 let value = encode(&Value::String($string));
@@ -55,6 +62,12 @@ pub(crate) fn thread_loop(mut stream: TcpStream, data_map_mutex: Arc<Mutex<HashM
                             }
                             CommandResponse::Quit => {
                                 break;
+                            }
+                            CommandResponse::Del { removed } => {
+                                response!(Value::Integer(removed));
+                            }
+                            CommandResponse::Keys { keys } => {
+                                response!(keys);
                             }
                         }
                     }
