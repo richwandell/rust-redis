@@ -6,7 +6,7 @@ Implemented
 - [x] GET
 - [x] DEL
 - [x] KEYS
-- [ ] MSET
+- [x] MSET
 - [ ] MGET
 - [ ] GETDEL
 - [ ] GETSET

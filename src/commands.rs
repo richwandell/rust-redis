@@ -5,3 +5,4 @@ pub(crate) const COMMAND_PING: &str = "PING";
 pub(crate) const COMMAND_COMMAND: &str = "COMMAND";
 pub(crate) const COMMAND_DEL: &str = "DEL";
 pub(crate) const COMMAND_KEYS: &str = "KEYS";
+pub(crate) const COMMAND_MSET: &str = "MSET";

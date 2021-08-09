@@ -27,6 +27,54 @@ pub(crate) fn create_command_respons() -> String {
                 Value::String("@string".to_string()),
                 Value::String("@slow".to_string())
             ])
+        ]),
+        Value::Array(vec![
+            Value::String("del".to_string()),
+            Value::Integer(-2),
+            Value::Array(vec![
+                Value::String("write".to_string())
+            ]),
+            Value::Integer(1),
+            Value::Integer(-1),
+            Value::Integer(1),
+            Value::Array(vec![
+                Value::String("@keyspace".to_string()),
+                Value::String("@write".to_string()),
+                Value::String("@slow".to_string())
+            ])
+        ]),
+        Value::Array(vec![
+            Value::String("keys".to_string()),
+            Value::Integer(2),
+            Value::Array(vec![
+                Value::String("readonly".to_string()),
+                Value::String("sort_for_script".to_string())
+            ]),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Array(vec![
+                Value::String("@keyspace".to_string()),
+                Value::String("@read".to_string()),
+                Value::String("@slow".to_string()),
+                Value::String("@dangerous".to_string()),
+            ])
+        ]),
+        Value::Array(vec![
+            Value::String("mset".to_string()),
+            Value::Integer(-3),
+            Value::Array(vec![
+                Value::String("write".to_string()),
+                Value::String("denyoom".to_string())
+            ]),
+            Value::Integer(1),
+            Value::Integer(-1),
+            Value::Integer(2),
+            Value::Array(vec![
+                Value::String("@write".to_string()),
+                Value::String("@string".to_string()),
+                Value::String("@slow".to_string())
+            ])
         ])
     ]);
 

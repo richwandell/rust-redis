@@ -1,4 +1,4 @@
-use crate::commands::{COMMAND_SET, COMMAND_GET, COMMAND_PING, COMMAND_COMMAND, COMMAND_QUIT, COMMAND_DEL, COMMAND_KEYS};
+use crate::commands::{COMMAND_SET, COMMAND_GET, COMMAND_PING, COMMAND_COMMAND, COMMAND_QUIT, COMMAND_DEL, COMMAND_KEYS, COMMAND_MSET};
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use crate::server::Storage;
@@ -25,7 +25,8 @@ pub(crate) enum CommandResponse {
     },
     Keys {
         keys: Value
-    }
+    },
+    Mset
 }
 
 pub(crate) fn process_command_transaction(
@@ -34,7 +35,22 @@ pub(crate) fn process_command_transaction(
 ) -> Result<CommandResponse, CommandError> {
     let data_map = &mut*data_map_mutex.lock().unwrap();
     let command = commands[0].to_uppercase();
-    if command == COMMAND_KEYS {
+    if command == COMMAND_MSET {
+        let mut i = 0;
+        let mut on_key = true;
+        let mut last_key = "".to_string();
+        for key_or_value in commands {
+            if i > 0 {
+                if !on_key {
+                    data_map.insert(last_key.clone(), Storage::String {value: key_or_value.clone()});
+                }
+                on_key = !on_key;
+                last_key = key_or_value;
+            }
+            i += 1;
+        }
+        return Ok(CommandResponse::Mset)
+    } else if command == COMMAND_KEYS {
         let mut matched_keys = vec![];
         let pattern = Pattern::new(&commands[1]).unwrap();
         for key in data_map.keys() {
