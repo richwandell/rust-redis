@@ -1,10 +1,13 @@
 mod commands;
 mod server;
+mod process_command_transaction;
+mod create_commands;
+mod create_command_response;
+mod thread_loop;
 
 use std::net::{TcpListener, TcpStream};
 use clap::{App, Arg};
 use crate::server::Server;
-
 
 fn main() -> std::io::Result<()> {
     let matches = App::new("Rust Redis")
