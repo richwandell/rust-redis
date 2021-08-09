@@ -106,6 +106,22 @@ pub(crate) fn create_command_respons() -> String {
                 Value::String("@slow".to_string()),
                 Value::String("@connection".to_string())
             ])
+        ]),
+        Value::Array(vec![
+            Value::String("mget".to_string()),
+            Value::Integer(-2),
+            Value::Array(vec![
+                Value::String("readonly".to_string()),
+                Value::String("fast".to_string())
+            ]),
+            Value::Integer(1),
+            Value::Integer(-1),
+            Value::Integer(1),
+            Value::Array(vec![
+                Value::String("@read".to_string()),
+                Value::String("@string".to_string()),
+                Value::String("@fast".to_string()),
+            ])
         ])
     ]);
 

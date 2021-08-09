@@ -1,9 +1,13 @@
 version: '3'
 services:
+  rust_redis:
+    build: .
+    ports:
+      - "5379:6379"
   redis:
     image: redis
     ports:
-      - ${REDIS_PORT}:6379
+      - "63791:6379"
 
 
 

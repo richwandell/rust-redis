@@ -10,7 +10,7 @@ Implemented
 - [x] DEL
 - [x] KEYS
 - [x] MSET
-- [ ] MGET
+- [x] MGET
 - [ ] GETDEL
 - [ ] GETSET
 - [ ] LPUSH

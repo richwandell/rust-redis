@@ -1,4 +1,4 @@
-use crate::commands::{COMMAND_SET, COMMAND_GET, COMMAND_PING, COMMAND_COMMAND, COMMAND_QUIT, COMMAND_DEL, COMMAND_KEYS, COMMAND_MSET};
+use crate::commands::{COMMAND_SET, COMMAND_GET, COMMAND_PING, COMMAND_COMMAND, COMMAND_QUIT, COMMAND_DEL, COMMAND_KEYS, COMMAND_MSET, COMMAND_MGET};
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use crate::server::Storage;
@@ -26,7 +26,18 @@ pub(crate) enum CommandResponse {
     Keys {
         keys: Value
     },
-    Mset
+    Mset,
+    Mget {
+        value: Value
+    }
+}
+
+fn item_to_value(item: &Storage) -> Value {
+    match item {
+        Storage::String { value } => Value::String(value.clone()),
+        Storage::List { value } => Value::Array(value.iter().map(|x| Value::String(x.clone())).collect::<Vec<Value>>()),
+        _ => Value::Null
+    }
 }
 
 pub(crate) fn process_command_transaction(
@@ -35,7 +46,25 @@ pub(crate) fn process_command_transaction(
 ) -> Result<CommandResponse, CommandError> {
     let data_map = &mut*data_map_mutex.lock().unwrap();
     let command = commands[0].to_uppercase();
-    if command == COMMAND_MSET {
+    if command == COMMAND_MGET {
+        let mut results = vec![];
+        let mut i = 0;
+        for key in commands {
+            if i > 0 {
+                if data_map.contains_key(&key) {
+                    if let Some(item) = data_map.get(&key).clone() {
+                        results.push(item_to_value(item));
+                    }
+                } else {
+                    results.push(Value::Null);
+                }
+            }
+            i += 1;
+        }
+        return Ok(CommandResponse::Mget {
+            value: Value::Array(results)
+        })
+    } else if command == COMMAND_MSET {
         let mut i = 0;
         let mut on_key = true;
         let mut last_key = "".to_string();

@@ -72,6 +72,9 @@ pub(crate) fn thread_loop(mut stream: TcpStream, data_map_mutex: Arc<Mutex<HashM
                             CommandResponse::Mset => {
                                 response!(Value::String("OK".to_string()));
                             }
+                            CommandResponse::Mget { value } => {
+                                response!(value);
+                            }
                         }
                     }
                     Err(error) => {
