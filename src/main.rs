@@ -1,9 +1,8 @@
-mod commands;
 mod server;
-mod process_command_transaction;
 mod create_commands;
 mod create_command_response;
 mod thread_loop;
+mod command;
 
 use std::net::{TcpListener, TcpStream};
 use clap::{App, Arg};
@@ -26,14 +25,21 @@ fn main() -> std::io::Result<()> {
             .short("p")
             .takes_value(true)
             .required(true))
+        .arg(Arg::with_name("log-std")
+            .help("Log to std")
+            .long("log-std")
+            .short("lstd")
+            .takes_value(false)
+            .required(false))
         .get_matches();
 
     let port = matches.value_of("port").unwrap();
     let host = matches.value_of("host").unwrap();
+    let log_std = matches.is_present("log-std");
 
     match TcpListener::bind(format!("{}:{}", host, port)) {
         Ok(listener) => {
-            let mut server = Server::new();
+            let mut server = Server::new(log_std);
             fn handle_client(stream: TcpStream, server: &mut Server) {
                 println!("{}", "thing happened");
                 server.add_connection(stream);

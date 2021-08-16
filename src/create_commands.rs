@@ -1,8 +1,10 @@
 use std::net::TcpStream;
-use std::io::{BufReader, BufRead};
+use std::io::{BufReader, BufRead, Read};
 use redis_protocol_parser::{RedisProtocolParser, RESP};
+use std::str::{from_utf8};
+use crate::server::Storage;
 
-pub fn create_commands(stream: &TcpStream) -> Vec<String> {
+pub(crate) fn create_commands(stream: &TcpStream) -> Vec<Storage> {
 
     let mut buffer = String::new();
     let mut reader = BufReader::new(stream);
@@ -11,51 +13,76 @@ pub fn create_commands(stream: &TcpStream) -> Vec<String> {
     if recieved_data_size == 0 {
         return vec![];
     }
+    let mut full_command = vec![];
+    full_command.append(&mut buffer.clone().as_bytes().to_vec());
 
-    let mut full_command: String = "".to_string();
-    full_command += &*buffer;
+    if buffer.starts_with("*") {
+        // array
+        let mut array_length_string = buffer.clone();
+        array_length_string.pop();
+        array_length_string.pop();
+        array_length_string.remove(0);
+        let array_length = array_length_string.parse::<usize>().unwrap();
 
-    if buffer.ends_with("\r\n") {
-        buffer.pop();
-        buffer.pop();
+        for _ in 0..array_length {
+            let mut length_string = String::new();
+            reader.read_line(&mut length_string)
+                .expect("Error reading line");
+            full_command.append(&mut length_string.clone().as_bytes().to_vec());
+            if length_string.starts_with("$") {
+                length_string.pop();
+                length_string.pop();
+                length_string.remove(0);
+                let item_length = length_string.parse::<usize>().unwrap();
+                let mut item_buffer = vec![0; item_length+2];
+                reader.read_exact(&mut item_buffer).expect("Error reading value");
+                full_command.append(&mut item_buffer);
+            }
+        }
     }
-    buffer.remove(0);
-    let length = buffer.parse::<i64>().unwrap();
 
-    for _ in 0..length {
-        buffer = String::new();
-        reader.read_line(&mut buffer)
-            .expect("Error reading line");
-        full_command += &*buffer;
-
-        buffer = String::new();
-        reader.read_line(&mut buffer)
-            .expect("Error reading line");
-        full_command += &*buffer;
+    macro_rules! string_match {
+        ($v:ident, $s:expr) => {
+            match from_utf8($s) {
+                Ok(item) => {
+                    $v.push(Storage::String {
+                        value: item.to_string(),
+                        created: -1.0,
+                        expire: -1.0
+                    })
+                }
+                Err(_) => {
+                    $v.push(Storage::Bytes {
+                        value: $s.to_vec(),
+                        created: -1.0,
+                        expire: -1.0
+                    })
+                }
+            }
+        }
     }
-
 
     match RedisProtocolParser::parse_resp(full_command.as_ref()) {
         Ok((resp, _left)) => {
-            let mut return_vec = vec![];
+            let mut return_vec: Vec<Storage> = vec![];
             match resp {
                 RESP::String(string) => {
-                    return_vec.push(std::str::from_utf8(string).unwrap().to_string());
+                    string_match!(return_vec, string)
                 }
                 RESP::Error(_) => {}
                 RESP::Integer(_) => {}
                 RESP::BulkString(string) => {
-                    return_vec.push(std::str::from_utf8(string).unwrap().to_string());
+                    string_match!(return_vec, string)
                 }
                 RESP::Nil => {}
                 RESP::Array(array) => {
                     for item in array {
                         match item {
                             RESP::BulkString(string) => {
-                                return_vec.push(std::str::from_utf8(string).unwrap().to_string());
+                                string_match!(return_vec, string)
                             }
                             RESP::String(string) => {
-                                return_vec.push(std::str::from_utf8(string).unwrap().to_string());
+                                string_match!(return_vec, string)
                             }
                             _ => {}
                         }
@@ -70,3 +97,4 @@ pub fn create_commands(stream: &TcpStream) -> Vec<String> {
         }
     }
 }
+

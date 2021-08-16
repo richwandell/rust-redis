@@ -2,6 +2,7 @@
 
 Implemented 
 
+- [x] MONITOR
 - [x] QUIT
 - [x] PING
 - [x] COMMAND
@@ -11,19 +12,14 @@ Implemented
 - [x] KEYS
 - [x] MSET
 - [x] MGET
-- [ ] GETDEL
-- [ ] GETSET
+- [x] GETDEL
+- [x] GETSET
 - [ ] LPUSH
 - [ ] LPOP
 - [ ] RPUSH
 - [ ] RPOP
 - [ ] LLEN
 - [ ] BLPOP
-
- Notes:
-
-Need to implement expire
-https://redis.io/commands/expire
 
 
 <img src="usage.gif" />

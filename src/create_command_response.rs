@@ -1,6 +1,6 @@
 use resp::{Value, encode};
 
-pub(crate) fn create_command_respons() -> String {
+pub(crate) fn create_command_respons() -> Vec<u8> {
     let values = Value::Array(vec![
         Value::Array(vec![
             Value::String("get".to_string()),
@@ -122,8 +122,59 @@ pub(crate) fn create_command_respons() -> String {
                 Value::String("@string".to_string()),
                 Value::String("@fast".to_string()),
             ])
+        ]),
+        Value::Array(vec![
+            Value::String("getdel".to_string()),
+            Value::Integer(2),
+            Value::Array(vec![
+                Value::String("write".to_string()),
+                Value::String("fast".to_string())
+            ]),
+            Value::Integer(1),
+            Value::Integer(1),
+            Value::Integer(1),
+            Value::Array(vec![
+                Value::String("@write".to_string()),
+                Value::String("@string".to_string()),
+                Value::String("@fast".to_string()),
+            ])
+        ]),
+        Value::Array(vec![
+            Value::String("monitor".to_string()),
+            Value::Integer(1),
+            Value::Array(vec![
+                Value::String("admin".to_string()),
+                Value::String("noscript".to_string()),
+                Value::String("loading".to_string()),
+                Value::String("stale".to_string()),
+            ]),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Integer(0),
+            Value::Array(vec![
+                Value::String("@admin".to_string()),
+                Value::String("@slow".to_string()),
+                Value::String("@dangerous".to_string()),
+            ])
+        ]),
+        Value::Array(vec![
+            Value::String("getset".to_string()),
+            Value::Integer(3),
+            Value::Array(vec![
+                Value::String("write".to_string()),
+                Value::String("denyoom".to_string()),
+                Value::String("fast".to_string())
+            ]),
+            Value::Integer(1),
+            Value::Integer(1),
+            Value::Integer(1),
+            Value::Array(vec![
+                Value::String("@write".to_string()),
+                Value::String("@string".to_string()),
+                Value::String("@fast".to_string()),
+            ])
         ])
     ]);
 
-    std::str::from_utf8(&encode(&values)).unwrap().parse().unwrap()
+    encode(&values)
 }
