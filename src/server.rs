@@ -3,7 +3,6 @@ use std::{thread};
 use std::sync::{Arc, Mutex, mpsc};
 use std::collections::HashMap;
 extern crate resp;
-use crate::thread_loop::thread_loop;
 use std::time::{SystemTime, UNIX_EPOCH};
 use crate::command::process_command_transaction::process_command_transaction;
 use crate::command::command_response::{CommandResponse, CommandError};
@@ -18,6 +17,7 @@ use async_std::{
 use crate::create_commands::create_commands;
 use std::rc::Rc;
 use std::cell::RefCell;
+use async_std::net::SocketAddr;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Storage {
@@ -51,43 +51,37 @@ pub(crate) struct Server {
     data_map: HashMap<String, Storage>,
 }
 
-// fn create_log_msg(log_std: bool, addr: SocketAddr, commands: Vec<Storage>) -> (String, Vec<Storage>) {
-//     if !log_std {
-//         return ("".to_string(), commands)
-//     }
-//     let time = SystemTime::now()
-//         .duration_since(UNIX_EPOCH)
-//         .unwrap()
-//         .as_secs_f64();
-//
-//     let ip = addr.ip();
-//     let port = addr.port();
-//     let mut command = "".to_string();
-//     for item in &commands {
-//         command += "\"";
-//         command += &match item {
-//             Storage::Bytes { value, created: _, expire: _ } => {
-//                 let clone = value.clone();
-//                 let str = String::from_utf8_lossy(&clone);
-//                 str.to_string()
-//             }
-//             Storage::String { value, created: _, expire: _ } => value.clone(),
-//             Storage::List { .. } => "list".to_string(),
-//             Storage::Set { .. } => "set".to_string()
-//         };
-//         command += "\" ";
-//     }
-//     command.pop();
-//     (format!("{:.6} [{}:{}] {}", time, ip, port, command), commands)
-// }
-
-async fn recieve(server: Rc<RefCell<&mut Server>>, task_uuid: String) {
-    if let Some(stream) = server.borrow_mut().connections_mutex.lock().unwrap().get(&task_uuid) {
-        let commands = create_commands(&stream);
-
-        println!("{:?}", commands);
+pub(crate) fn create_log_msg(log_std: bool, addr: SocketAddr, commands: Vec<Storage>) -> (String, Vec<Storage>) {
+    if !log_std {
+        return ("".to_string(), commands)
     }
+    let time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs_f64();
+
+    let ip = addr.ip();
+    let port = addr.port();
+    let mut command = "".to_string();
+    for item in &commands {
+        command += "\"";
+        command += &match item {
+            Storage::Bytes { value, created: _, expire: _ } => {
+                let clone = value.clone();
+                let str = String::from_utf8_lossy(&clone);
+                str.to_string()
+            }
+            Storage::String { value, created: _, expire: _ } => value.clone(),
+            Storage::List { .. } => "list".to_string(),
+            Storage::Set { .. } => "set".to_string()
+        };
+        command += "\" ";
+    }
+    command.pop();
+    (format!("{:.6} [{}:{}] {}", time, ip, port, command), commands)
 }
+
+
 
 impl Server {
 
@@ -197,17 +191,21 @@ impl Server {
 
 
 
-    pub(crate) fn add_connection(&mut self, stream: TcpStream, shared_state: Rc<RefCell<&mut Server>>) {
+    pub(crate) fn add_connection(&mut self, stream: TcpStream) {
         let ip = stream.local_addr().unwrap().ip();
         println!("adding connection {}", ip);
         let my_uuid = Uuid::new_v4().to_string();
-        self.connections_mutex.lock().unwrap().insert(my_uuid.clone(), stream);
+        // self.connections_mutex.lock().unwrap().insert(my_uuid.clone(), stream.clone());
 
-
-        task::spawn(recieve(shared_state, my_uuid));
-
-        // let tx = self.sender.clone();
-        // self.thread_join_handles.push(thread::spawn(move || thread_loop(stream, tx, mprx, my_uuid)));
+        // task::spawn(async move {
+        //     loop {
+        //         let commands = create_commands(&stream).await;
+        //
+        //         println!("{:?}", commands);
+        //
+        //         self.data_map.get("hi").expect("this is a thing");
+        //     }
+        // });
     }
 
 }

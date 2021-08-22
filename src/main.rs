@@ -1,19 +1,28 @@
 mod server;
 mod create_commands;
 mod create_command_response;
-mod thread_loop;
+mod connection_loop;
 mod command;
 
 // use std::net::{TcpListener, TcpStream};
 use clap::{App, Arg};
-use crate::server::Server;
+use crate::server::{Server, Storage};
 use async_std::io;
-use async_std::net::TcpListener;
+use async_std::net::{TcpListener, TcpStream};
 use async_std::prelude::*;
 use std::io::Error;
 use std::rc::Rc;
 use std::cell::RefCell;
-
+use async_std::{
+    io::BufReader,
+    task
+};
+use std::collections::HashMap;
+use crate::create_commands::create_commands;
+use crate::server::create_log_msg;
+use std::collections::hash_map::RandomState;
+use async_std::sync::{Arc, Mutex};
+use crate::connection_loop::connection_loop;
 
 #[async_std::main]
 async fn main() -> std::io::Result<()> {
@@ -48,14 +57,14 @@ async fn main() -> std::io::Result<()> {
 
     match TcpListener::bind(format!("{}:{}", host, port)).await {
         Ok(listener) => {
-            let mut server = Server::new(log_std);
+            let connections: HashMap<String, TcpStream> = HashMap::new();
+            let data_map: HashMap<String, Storage> = HashMap::new();
+            let data_arc = Arc::new(Mutex::new(data_map));
+
             let mut incoming = listener.incoming();
-            let shared_state = Rc::new(RefCell::new(&mut server));
             while let Some(stream) = incoming.next().await {
                 let mut stream = stream.expect("Error unwrapping stream");
-                shared_state.borrow_mut().add_connection(stream, shared_state.clone())
-                // server.add_connection(stream, shared_state.clone());
-                // stream.write_all(b"hello world").await.expect("Error unwrapping stream");
+                task::spawn(connection_loop(stream, data_arc.clone(), log_std));
             }
             Ok(())
         }

@@ -1,14 +1,16 @@
-use std::io::{BufReader, BufRead, Read};
+// use std::io::{BufReader, BufRead, Read};
 use redis_protocol_parser::{RedisProtocolParser, RESP};
 use std::str::{from_utf8};
 use crate::server::Storage;
 use async_std::net::TcpStream;
+use async_std::io::{BufReader, BufRead, Read};
+use async_std::prelude::*;
 
-pub(crate) fn create_commands(stream: &TcpStream) -> Vec<Storage> {
+pub(crate) async fn create_commands(stream: &TcpStream) -> Vec<Storage> {
 
     let mut buffer = String::new();
     let mut reader = BufReader::new(stream);
-    let recieved_data_size = reader.read_line(&mut buffer)
+    let recieved_data_size = reader.read_line(&mut buffer).await
         .expect("Error reading line");
     if recieved_data_size == 0 {
         return vec![];
@@ -26,7 +28,7 @@ pub(crate) fn create_commands(stream: &TcpStream) -> Vec<Storage> {
 
         for _ in 0..array_length {
             let mut length_string = String::new();
-            reader.read_line(&mut length_string)
+            reader.read_line(&mut length_string).await
                 .expect("Error reading line");
             full_command.append(&mut length_string.clone().as_bytes().to_vec());
             if length_string.starts_with("$") {
@@ -35,7 +37,7 @@ pub(crate) fn create_commands(stream: &TcpStream) -> Vec<Storage> {
                 length_string.remove(0);
                 let item_length = length_string.parse::<usize>().unwrap();
                 let mut item_buffer = vec![0; item_length+2];
-                reader.read_exact(&mut item_buffer).expect("Error reading value");
+                reader.read_exact(&mut item_buffer).await.expect("Error reading value");
                 full_command.append(&mut item_buffer);
             }
         }
