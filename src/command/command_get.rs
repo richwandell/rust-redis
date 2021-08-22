@@ -18,7 +18,7 @@ pub(crate) fn command_get(
                     data_map.remove(&key).expect("Unable to remove key");
                 }
                 Ok(CommandResponse::Get {
-                    response: Value::String (return_value)
+                    response: Value::Bulk (return_value)
                 })
             }
             Storage::Bytes { value, created, expire } => {
