@@ -33,17 +33,18 @@ pub(crate) fn thread_loop(
     let mut message = vec![];
 
     loop {
+        let mut stream_clone = stream.try_clone().unwrap();
         if message.len() > 0 {
-            stream.write(message.as_ref());
+            stream_clone.write(message.as_ref());
         }
 
-        let commands = create_commands(&stream);
+        let commands = create_commands(&stream_clone);
 
         if commands.len() > 0 {
             if storage_string(commands.get(0).unwrap()).to_uppercase() == "MONITOR" {
                 monitor = true;
             }
-            tx.send((commands, stream.peer_addr().unwrap(), my_uuid.clone())).expect("unable to send command");
+            tx.send((commands, stream_clone.peer_addr().unwrap(), my_uuid.clone())).expect("unable to send command");
             message = mprx.recv().unwrap();
             if monitor {
                 break;

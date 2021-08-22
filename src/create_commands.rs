@@ -1,8 +1,8 @@
-use std::net::TcpStream;
 use std::io::{BufReader, BufRead, Read};
 use redis_protocol_parser::{RedisProtocolParser, RESP};
 use std::str::{from_utf8};
 use crate::server::Storage;
+use async_std::net::TcpStream;
 
 pub(crate) fn create_commands(stream: &TcpStream) -> Vec<Storage> {
 
