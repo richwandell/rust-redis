@@ -7,14 +7,13 @@ use crate::command::command_response::{CommandResponse, CommandError};
 
 pub(crate) fn command_keys(
     mut commands: Vec<Storage>,
-    data_map_mutex: &Arc<Mutex<HashMap<String, Storage>>>
+    mut data_map: &HashMap<String, Storage>
 ) -> Result<CommandResponse, CommandError> {
     if commands.len() == 0 {
         return Err(CommandError::Error {
             text: "(error) ERR wrong number of arguments for 'keys' command".to_string()
         });
     }
-    let data_map = &mut*data_map_mutex.lock().unwrap();
     let mut matched_keys = vec![];
     let pattern_string = storage_string!(commands.remove(0));
     let pattern = Pattern::new(&pattern_string).unwrap();

@@ -16,33 +16,33 @@ use crate::command::command_setex::command_setex;
 
 pub(crate) fn process_command_transaction(
     mut commands: Vec<Storage>,
-    data_map_mutex: &Arc<Mutex<HashMap<String, Storage>>>
+    mut data_map: &mut HashMap<String, Storage>
 ) -> Result<CommandResponse, CommandError> {
     let command = storage_string!(commands.remove(0)).to_uppercase();
 
     if command == COMMAND_SETEX {
-        return command_setex(commands, data_map_mutex);
+        return command_setex(commands, data_map);
     }
     else if command == COMMAND_MONITOR {
         return Ok(CommandResponse::Monitor)
     }
     else if command == COMMAND_GETSET {
-        return command_getset(commands, data_map_mutex);
+        return command_getset(commands, data_map);
     }
     else if command == COMMAND_GETDEL {
-        return command_getdel(commands, data_map_mutex);
+        return command_getdel(commands, data_map);
     }
     else if command == COMMAND_MGET {
-        return command_mget(commands, data_map_mutex);
+        return command_mget(commands, data_map);
     }
     else if command == COMMAND_MSET {
-        return command_mset(commands, data_map_mutex);
+        return command_mset(commands, data_map);
     }
     else if command == COMMAND_KEYS {
-        return command_keys(commands, data_map_mutex);
+        return command_keys(commands, data_map);
     }
     else if command == COMMAND_DEL {
-        return command_del(commands, data_map_mutex);
+        return command_del(commands, data_map);
     }
     else if command == COMMAND_QUIT {
         return Ok(CommandResponse::Quit)
@@ -54,10 +54,10 @@ pub(crate) fn process_command_transaction(
         return Ok(CommandResponse::Ping)
     }
     else if command == COMMAND_SET {
-        return command_set(commands, data_map_mutex);
+        return command_set(commands, data_map);
     }
     else if command == COMMAND_GET {
-        return command_get(commands, data_map_mutex);
+        return command_get(commands, data_map);
     }
     return Err(CommandError::Error {
         text: format!("-ERR unknown command `{}`, with args beginning with: {}", command, if commands.len() > 0 {

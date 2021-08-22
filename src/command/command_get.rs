@@ -7,9 +7,8 @@ use resp::Value;
 
 pub(crate) fn command_get(
     mut commands: Vec<Storage>,
-    data_map_mutex: &Arc<Mutex<HashMap<String, Storage>>>
+    mut data_map: &mut HashMap<String, Storage>
 ) -> Result<CommandResponse, CommandError> {
-    let data_map = &mut*data_map_mutex.lock().unwrap();
     let key = storage_string!(commands.remove(0));
     if data_map.contains_key(&key) {
         match data_map.get(&key).expect("key not found") {

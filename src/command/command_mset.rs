@@ -5,9 +5,8 @@ use crate::command::command_response::{CommandResponse, CommandError};
 
 pub(crate) fn command_mset(
     commands: Vec<Storage>,
-    data_map_mutex: &Arc<Mutex<HashMap<String, Storage>>>
+    mut data_map: &mut HashMap<String, Storage>
 ) -> Result<CommandResponse, CommandError> {
-    let data_map = &mut*data_map_mutex.lock().unwrap();
     let mut on_key = true;
     let mut last_key = "".to_string();
     for key_or_value in commands {
