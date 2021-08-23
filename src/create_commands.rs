@@ -1,8 +1,57 @@
 use std::net::TcpStream;
 use std::io::{BufReader, BufRead, Read};
-use redis_protocol_parser::{RedisProtocolParser, RESP};
+use redis_protocol_parser::{RedisProtocolParser, RESP, RError};
 use std::str::{from_utf8};
 use crate::server::Storage;
+
+pub(crate) fn create_commands_new(stream: &TcpStream) -> Vec<Storage> {
+    let mut buffer: Vec<u8> = vec![0; 10];
+    let mut reader = BufReader::new(stream);
+    reader.read_until(b'\n', &mut buffer).expect("Error reading bytes");
+
+    let mut array_length = 0;
+    for i in (0..buffer.len()-2).rev() {
+        if buffer.get(i).unwrap() == &b'*' {
+            let received_data_size_bytes = &buffer[i+1..buffer.len() - 2];
+            let received_data_size_string = String::from_utf8_lossy(&received_data_size_bytes);
+            array_length = received_data_size_string.parse::<usize>().unwrap();
+            break;
+        }
+    }
+
+    if array_length == 0 {
+        return vec![];
+    }
+
+    for _ in 0..array_length {
+        let mut buffer: Vec<u8> = vec![0; 10];
+        reader.read_until(b'\n', &mut buffer).expect("Error reading bytes");
+        let mut data_length = 0;
+        for i in (0..buffer.len()-2).rev() {
+            if buffer.get(i).unwrap() == &b'$' {
+                let received_data_size_bytes = &buffer[i+1..buffer.len() - 2];
+                let received_data_size_string = String::from_utf8_lossy(&received_data_size_bytes);
+                data_length = received_data_size_string.parse::<usize>().unwrap();
+                break;
+            }
+        }
+        let mut item_buffer = vec![0; data_length+2];
+        reader.read_exact(&mut item_buffer).expect("Error reading value");
+
+        let tmp_str = String::from_utf8_lossy(&item_buffer);
+        println!("{}", tmp_str);
+        // match RedisProtocolParser::parse_resp(item_buffer.as_ref()) {
+        //     Ok(_) => {}
+        //     Err(_) => {}
+        // }
+    }
+
+    let str = String::from_utf8_lossy(&buffer);
+
+    let string = str.to_string();
+    let commands = vec![];
+    return commands;
+}
 
 pub(crate) fn create_commands(stream: &TcpStream) -> Vec<Storage> {
 

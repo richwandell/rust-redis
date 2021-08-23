@@ -12,9 +12,13 @@ use crate::command::command_response::{CommandResponse, CommandError};
 use resp::{Value, encode};
 use crate::create_command_response::create_command_respons;
 use uuid::Uuid;
+use crate::command::commands::RedisCommand;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Storage {
+    Command {
+        value: RedisCommand
+    },
     Bytes {
         value: Vec<u8>,
         created: f64,
@@ -67,7 +71,8 @@ fn create_log_msg(log_std: bool, addr: SocketAddr, commands: Vec<Storage>) -> (S
             }
             Storage::String { value, created: _, expire: _ } => value.clone(),
             Storage::List { .. } => "list".to_string(),
-            Storage::Set { .. } => "set".to_string()
+            Storage::Set { .. } => "set".to_string(),
+            Storage::Command { .. } => "command".to_string()
         };
         command += "\" ";
     }

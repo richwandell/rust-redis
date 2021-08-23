@@ -10,7 +10,7 @@ use resp::{encode, Value};
 use crate::command::command_response::{CommandError, CommandResponse};
 use crate::command::process_command_transaction::process_command_transaction;
 use crate::create_command_response::create_command_respons;
-use crate::create_commands::create_commands;
+use crate::create_commands::{create_commands, create_commands_new};
 use crate::server::Storage;
 
 fn storage_string(storage: &Storage) -> String {
@@ -18,7 +18,8 @@ fn storage_string(storage: &Storage) -> String {
         Storage::Bytes { .. } => "".to_string(),
         Storage::String { value, created: _, expire: _ } => value.clone(),
         Storage::List { .. } => "".to_string(),
-        Storage::Set { .. } => "".to_string()
+        Storage::Set { .. } => "".to_string(),
+        Storage::Command { .. } => "".to_string()
     }
 }
 

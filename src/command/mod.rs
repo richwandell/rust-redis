@@ -8,7 +8,8 @@ macro_rules! storage_string {
             Storage::Bytes { .. } => "".to_string(),
             Storage::String { value, created:_, expire:_ } => value,
             Storage::List { .. } => "".to_string(),
-            Storage::Set { .. } => "".to_string()
+            Storage::Set { .. } => "".to_string(),
+            Storage::Command {..} => "".to_string()
         }
     }}
 }
@@ -22,7 +23,8 @@ macro_rules! storage_float {
                 value.parse::<f64>().unwrap()
             },
             Storage::List { .. } => -1.0,
-            Storage::Set { .. } => -1.0
+            Storage::Set { .. } => -1.0,
+            _ => -1.0
         }
     }}
 }
@@ -48,7 +50,7 @@ mod command_mset;
 mod command_mget;
 mod command_getdel;
 mod command_getset;
-mod commands;
+pub(crate) mod commands;
 mod command_setex;
 
 pub(crate) fn expire_storage(item: Storage, ttl: f64) -> Storage {
