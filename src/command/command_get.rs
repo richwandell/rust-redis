@@ -7,9 +7,12 @@ use resp::Value;
 
 pub(crate) fn command_get(
     mut commands: Vec<Storage>,
-    mut data_map: &mut HashMap<String, Storage>
+    mut data_map: &mut HashMap<Vec<u8>, Storage>
 ) -> Result<CommandResponse, CommandError> {
-    let key = storage_string!(commands.remove(0));
+    let key = match commands.remove(0) {
+        Storage::Bytes { value, .. } => value,
+        _ => vec![]
+    };
     if data_map.contains_key(&key) {
         match data_map.get(&key).expect("key not found") {
             Storage::String { value, created, expire } => {

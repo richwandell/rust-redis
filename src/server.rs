@@ -101,21 +101,22 @@ impl Server {
         let connections_mutex = Arc::clone(&self.connections_mutex);
 
         thread::spawn(move || {
-            let mut data_map: HashMap<String, Storage> = HashMap::new();
+            let mut data_map: HashMap<Vec<u8>, Storage> = HashMap::new();
             let mut monitoring_threads = vec![];
+            let set_response = encode(&Value::String("OK".to_string()));
             loop {
                 let (commands, socket_addr, thread_uuid) = rx.recv().unwrap();
-                let (msg, commands) = create_log_msg(log_std || monitoring_threads.len() > 0, socket_addr, commands);
-                if log_std {
-                    println!("{}", msg.clone());
-                }
+                // let (msg, commands) = create_log_msg(log_std || monitoring_threads.len() > 0, socket_addr, commands);
+                // if log_std {
+                //     println!("{}", msg.clone());
+                // }
                 let mut message = vec![];
 
                 match process_command_transaction(commands, &mut data_map) {
                     Ok(result) => {
                         match result {
                             CommandResponse::Set => {
-                                message = encode(&Value::String("OK".to_string()));
+                                message = set_response.clone();
                             }
                             CommandResponse::Get { response } => {
                                 message = encode(&response);
@@ -168,11 +169,11 @@ impl Server {
                     }
                 }
 
-                for thread_id in &monitoring_threads {
-                    let txmx = &*connections_mutex.lock().unwrap();
-                    let m = encode(&Value::String(msg.clone()));
-                    txmx.get(thread_id).unwrap().send(m);
-                }
+                // for thread_id in &monitoring_threads {
+                //     let txmx = &*connections_mutex.lock().unwrap();
+                //     let m = encode(&Value::String(msg.clone()));
+                //     txmx.get(thread_id).unwrap().send(m);
+                // }
 
                 let txmx = &*connections_mutex.lock().unwrap();
                 txmx.get(&thread_uuid).unwrap().send(message);

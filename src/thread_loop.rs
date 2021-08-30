@@ -12,16 +12,7 @@ use crate::command::process_command_transaction::process_command_transaction;
 use crate::create_command_response::create_command_respons;
 use crate::create_commands::{create_commands, create_commands_new};
 use crate::server::Storage;
-
-fn storage_string(storage: &Storage) -> String {
-    match storage {
-        Storage::Bytes { .. } => "".to_string(),
-        Storage::String { value, created: _, expire: _ } => value.clone(),
-        Storage::List { .. } => "".to_string(),
-        Storage::Set { .. } => "".to_string(),
-        Storage::Command { .. } => "".to_string()
-    }
-}
+use crate::command::commands::RedisCommand;
 
 pub(crate) fn thread_loop(
     mut stream: TcpStream,
@@ -38,11 +29,19 @@ pub(crate) fn thread_loop(
             stream.write(message.as_ref());
         }
 
-        let commands = create_commands(&stream);
+        let commands = create_commands_new(&stream);
 
         if commands.len() > 0 {
-            if storage_string(commands.get(0).unwrap()).to_uppercase() == "MONITOR" {
-                monitor = true;
+            match commands.get(0).unwrap() {
+                Storage::Command { value } => {
+                    match value {
+                        RedisCommand::Monitor => {
+                            monitor = true;
+                        }
+                        _ => {}
+                    }
+                }
+                _ => {}
             }
             tx.send((commands, stream.peer_addr().unwrap(), my_uuid.clone())).expect("unable to send command");
             message = mprx.recv().unwrap();

@@ -5,7 +5,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 macro_rules! storage_string {
     ($e:expr) => {{
         match $e {
-            Storage::Bytes { .. } => "".to_string(),
+            Storage::Bytes { value, created: _, expire: _ } => {
+                let str = String::from_utf8_lossy(&value);
+                str.to_string()
+            },
             Storage::String { value, created:_, expire:_ } => value,
             Storage::List { .. } => "".to_string(),
             Storage::Set { .. } => "".to_string(),

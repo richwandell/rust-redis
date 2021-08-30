@@ -15,25 +15,28 @@ const GET: &str = "GET";
 
 pub(crate) fn command_set(
     mut commands: Vec<Storage>,
-    mut data_map: &mut HashMap<String, Storage>
+    mut data_map: &mut HashMap<Vec<u8>, Storage>
 ) -> Result<CommandResponse, CommandError> {
-    let key = storage_string!(commands.remove(0));
+    let key = match commands.remove(0) {
+        Storage::Bytes { value, .. } => value,
+        _ => vec![]
+    };
     let mut val = commands.remove(0);
 
-    while commands.len() > 0 {
-        let next = storage_string!(commands.remove(0));
-        if next.to_uppercase() == EX {
-            if commands.len() == 0 {
-                return Err(CommandError::Error {text: "(error) ERR syntax error".to_string()})
-            }
-            let seconds = storage_string!(commands.remove(0));
-            if let Ok(ttl) = seconds.parse::<f64>() {
-                val = expire_storage(val, ttl);
-            } else {
-                return Err(CommandError::Error {text: "(error) ERR value is not an integer or out of range".to_string()})
-            }
-        }
-    }
+    // while commands.len() > 0 {
+    //     let next = commands.remove(0);
+    //     if next.to_uppercase() == EX {
+    //         if commands.len() == 0 {
+    //             return Err(CommandError::Error {text: "(error) ERR syntax error".to_string()})
+    //         }
+    //         let seconds = storage_string!(commands.remove(0));
+    //         if let Ok(ttl) = seconds.parse::<f64>() {
+    //             val = expire_storage(val, ttl);
+    //         } else {
+    //             return Err(CommandError::Error {text: "(error) ERR value is not an integer or out of range".to_string()})
+    //         }
+    //     }
+    // }
 
     data_map.insert(key, val);
     Ok(CommandResponse::Set)

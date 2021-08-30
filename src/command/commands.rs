@@ -26,5 +26,7 @@ pub(crate) enum RedisCommand {
     GetDel,
     GetSet,
     Monitor,
-    SetEx
+    SetEx,
+    Config,
+    Unknown
 }
