@@ -34,7 +34,8 @@ fn create_log_msg(addr: SocketAddr, commands: Vec<Storage>) -> (String, Vec<Stor
             }
             Storage::String { value, created: _, expire: _ } => value.clone(),
             Storage::List { .. } => "list".to_string(),
-            Storage::Set { .. } => "set".to_string()
+            Storage::Set { .. } => "set".to_string(),
+            Storage::Command { .. } => "command".to_string()
         };
         command += "\" ";
     }
@@ -43,29 +44,28 @@ fn create_log_msg(addr: SocketAddr, commands: Vec<Storage>) -> (String, Vec<Stor
 }
 
 pub(crate) fn thread_loop(
-    stream: TcpStream,
+    mut stream: TcpStream,
     data_map_mutex: Arc<Mutex<HashMap<String, Storage>>>,
     tx: Sender<String>,
     mprx: Receiver<String>,
 ) {
     let mut monitor = false;
-    let stream_mutex = Arc::new(Mutex::new(stream));
-    let stream_mutex1 = Arc::clone(&stream_mutex);
-    let stream_mutex2 = Arc::clone(&stream_mutex);
+    // let stream_mutex = Arc::new(Mutex::new(stream));
+    // let stream_mutex1 = Arc::clone(&stream_mutex);
+    // let stream_mutex2 = Arc::clone(&stream_mutex);
 
     let mut message = vec![];
 
     loop {
         if message.len() > 0 {
-            &stream_mutex1.lock().unwrap().write(message.as_ref());
+            &stream.write(message.as_ref());
         }
 
-        let stream = &stream_mutex1.lock().unwrap();
-        let commands = create_commands(stream);
+        let commands = create_commands(&stream);
 
         if commands.len() > 0 {
-            let (msg, commands) = create_log_msg(stream.peer_addr().unwrap(), commands);
-            tx.send(msg).expect("error sending message");
+            // let (msg, commands) = create_log_msg(stream.peer_addr().unwrap(), commands);
+            // tx.send(msg).expect("error sending message");
             match process_command_transaction(commands, &data_map_mutex) {
                 Ok(result) => {
                     match result {
@@ -131,7 +131,6 @@ pub(crate) fn thread_loop(
     if monitor {
         loop {
             let msg = mprx.recv().unwrap();
-            let stream = &mut stream_mutex2.lock().unwrap();
             match stream.write(encode(&Value::String(msg)).as_ref()) {
                 Ok(sent) => {
                     println!("wrote {}", sent);

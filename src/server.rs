@@ -6,9 +6,13 @@ use std::collections::HashMap;
 use mpsc::{Sender as MSender, Receiver as MReceiver};
 extern crate resp;
 use crate::thread_loop::thread_loop;
+use crate::command::commands::RedisCommand;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Storage {
+    Command {
+        value: RedisCommand
+    },
     Bytes {
         value: Vec<u8>,
         created: f64,

@@ -11,3 +11,20 @@ pub(crate) const COMMAND_GETDEL: &str = "GETDEL";
 pub(crate) const COMMAND_GETSET: &str = "GETSET";
 pub(crate) const COMMAND_MONITOR: &str = "MONITOR";
 pub(crate) const COMMAND_SETEX: &str = "SETEX";
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum RedisCommand {
+    Quit,
+    Set,
+    Get,
+    Ping,
+    Command,
+    Del,
+    Keys,
+    Mset,
+    Mget,
+    GetDel,
+    GetSet,
+    Monitor,
+    SetEx
+}
